@@ -1,0 +1,109 @@
+INSTALAR NODE JS
+INSTALAR PYTHON
+INSTALAR VISUAL STUDIO CODE
+EXTENSIONES A INSTALA EN VSC: django, PYTHON, bootstrap5
+
+# Crear proyecto django-admin startproject TiendaColombia
+cd TiendaColombia
+python manage.py startapp sistema
+
+#instalar PAQUETES
+
+pip install django==5.0.9
+pip install PyMySQL
+pip install pillow
+pip install django-bootstrap5
+
+configurar el _init_.py
+---------------------------------------
+Abrir XAMPP crear la base de datos
+
+crear la base de datos: 
+tiendacolombia
+
+RECUERDA ELIMINAR EL ARCHIVO DE EMIGRATE
+
+-----------------------------------------
+python manage.py makemigrations TiendaColombia
+python manage.py migrate
+-------------------------
+
+Montar el SQL INSERT: sql_datos.sql
+
+---------------------------
+ejecutar el CMD: python manage.py shell
+
+despues ejecutar el siguiente codigo:
+
+from sistema.models import Actor
+
+# Actualizar contraseñas de todos los actores
+actores = [
+    ('carlos@empresa.com', 'admin123', 'admin'),
+    ('maria@email.com', 'usuario123', 'usuario'),
+    ('juan@email.com', 'usuario123', 'usuario'),
+    ('ana@email.com', 'usuario123', 'usuario'),
+    ('pedro@email.com', 'usuario123', 'usuario'),
+    ('luisa@email.com', 'usuario123', 'usuario'),
+    ('andres@email.com', 'usuario123', 'usuario'),
+]
+
+print("="*50)
+print("ACTUALIZANDO CONTRASEÑAS")
+print("="*50)
+
+for email, password, rol in actores:
+    try:
+        actor = Actor.objects.get(email=email)
+        actor.set_password(password)
+        actor.rol = rol
+        actor.activo = True
+        actor.save()
+        print(f"✓ {email} - OK")
+    except Actor.DoesNotExist:
+        actor = Actor(nombre=email.split('@')[0], email=email, rol=rol)
+        actor.set_password(password)
+        actor.save()
+        print(f"+ {email} - CREADO")
+
+print("="*50)
+print("VERIFICANDO...")
+print("="*50)
+
+for email, password, rol in actores:
+    actor = Actor.objects.get(email=email)
+    if actor.check_password(password):
+        print(f"✓ {email} - ACCESO CORRECTO")
+    else:
+        print(f"✗ {email} - ERROR")
+
+print("="*50)
+print("CREDENCIALES:")
+print("Admin: carlos@empresa.com / admin123")
+print("Usuario: cualquier email / usuario123")
+print("="*50)
+
+Administrador:
+----------------------
+Email: carlos@empresa.com
+Contraseña: admin123
+
+Usuarios regulares:
+----------------------
+Email: maria@email.com
+Contraseña: usuario123
+
+Email: juan@email.com
+Contraseña: usuario123
+
+Email: ana@email.com
+Contraseña: usuario123
+
+Email: pedro@email.com
+Contraseña: usuario123
+
+Email: luisa@email.com
+Contraseña: usuario123
+
+Email: andres@email.com
+Contraseña: usuario123

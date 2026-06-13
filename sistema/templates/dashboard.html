@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-speedometer2"></i> Dashboard</h2>
+    <a href="{% url 'crear_gasto' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nuevo Gasto
+    </a>
+</div>
+
+<!-- Tarjetas de estadísticas -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card card-stats bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Gastos</h6>
+                        <h2 class="card-title">$ {{ total_gastos|floatformat:0 }}</h2>
+                        <p class="card-text small">Todos los gastos registrados</p>
+                    </div>
+                    <i class="bi bi-calculator display-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Últimos 30 días</h6>
+                        <h2 class="card-title">$ {{ total_30dias|floatformat:0 }}</h2>
+                        <p class="card-text small">Gastos del último mes</p>
+                    </div>
+                    <i class="bi bi-calendar-week display-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card card-stats bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total Transacciones</h6>
+                        <h2 class="card-title">{{ cantidad_gastos }}</h2>
+                        <p class="card-text small">Gastos registrados</p>
+                    </div>
+                    <i class="bi bi-receipt display-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Gráfico de gastos mensuales -->
+    <div class="col-md-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Evolución de Gastos</h5>
+            </div>
+            <div class="card-body">
+                {% if gastos_mensuales %}
+                <canvas id="gastosMensualesChart" height="300"></canvas>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No hay datos suficientes para mostrar el gráfico
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Top categorías -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Top Categorías</h5>
+            </div>
+            <div class="card-body">
+                {% if gastos_por_categoria %}
+                <canvas id="categoriasChart" height="300"></canvas>
+                {% else %}
+                <div class="alert alert-info text-center">
+                    <i class="bi bi-info-circle"></i> No hay datos para mostrar
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Últimos gastos -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-clock-history"></i> Últimos Gastos</h5>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Título</th>
+                        <th>Categoría</th>
+                        <th>Monto</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for gasto in ultimos_gastos %}
+                    <tr>
+                        <td>{{ gasto.fecha|date:"d/m/Y" }}</td>
+                        <td>{{ gasto.titulo }}</td>
+                        <td>
+                            <span class="badge" style="background-color: {{ gasto.categoria.color }}">
+                                {{ gasto.categoria.nombre }}
+                            </span>
+                        </td>
+                        <td class="text-end fw-bold">$ {{ gasto.monto|floatformat:0 }}</td>
+                        <td>
+                            <a href="{% url 'editar_gasto' gasto.id %}" class="btn btn-sm btn-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted"></i>
+                            <p class="mt-2">No hay gastos registrados</p>
+                            <a href="{% url 'crear_gasto' %}" class="btn btn-sm btn-primary">
+                                Crear primer gasto
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Función para formatear números en pesos colombianos
+    function formatCOP(value) {
+        return new Intl.NumberFormat('es-CO', {
+            style: 'currency',
+            currency: 'COP',
+            minimumFractionDigits: 0
+        }).format(value);
+    }
+    
+    // Gráfico de gastos mensuales
+    const ctx1 = document.getElementById('gastosMensualesChart');
+    if (ctx1) {
+        new Chart(ctx1, {
+            type: 'line',
+            data: {
+                labels: [{% for mes in gastos_mensuales %}'{{ mes.nombre }}',{% endfor %}],
+                datasets: [{
+                    label: 'Total Gastos (COP)',
+                    data: [{% for mes in gastos_mensuales %}{{ mes.total }},{% endfor %}],
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true,
+                    pointBackgroundColor: 'rgb(75, 192, 192)',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            font: { size: 12 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                let value = context.raw || 0;
+                                return `${label}: ${formatCOP(value)}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return formatCOP(value);
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Monto en Pesos Colombianos (COP)',
+                            font: { size: 12 }
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Meses',
+                            font: { size: 12 }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    // Gráfico de categorías
+    const ctx2 = document.getElementById('categoriasChart');
+    if (ctx2) {
+        new Chart(ctx2, {
+            type: 'pie',
+            data: {
+                labels: [{% for cat in gastos_por_categoria %}'{{ cat.categoria__nombre }}',{% endfor %}],
+                datasets: [{
+                    data: [{% for cat in gastos_por_categoria %}{{ cat.total }},{% endfor %}],
+                    backgroundColor: [{% for cat in gastos_por_categoria %}'{{ cat.categoria__color }}',{% endfor %}],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            font: { size: 11 }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.label || '';
+                                let value = context.raw || 0;
+                                let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                let percentage = ((value / total) * 100).toFixed(1);
+                                return `${label}: ${formatCOP(value)} (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+</script>
+{% endblock %}

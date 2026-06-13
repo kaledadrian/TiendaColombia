@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="bi bi-tags"></i> Categorías</h2>
+    <a href="{% url 'crear_categoria' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Nueva Categoría
+    </a>
+</div>
+
+<div class="row">
+    {% for categoria in categorias %}
+    <div class="col-md-4 mb-3">
+        <div class="card shadow-sm h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <i class="bi {{ categoria.icono }} fs-1" style="color: {{ categoria.color }}"></i>
+                        <h5 class="mt-2">{{ categoria.nombre }}</h5>
+                        <p class="text-muted small">{{ categoria.descripcion|truncatechars:100 }}</p>
+                        <div class="mt-2">
+                            <span class="badge bg-secondary">
+                                {{ categoria.gastos.count }} gastos
+                            </span>
+                        </div>
+                    </div>
+                    <div class="btn-group">
+                        <a href="{% url 'editar_categoria' categoria.id %}" class="btn btn-sm btn-warning">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{% url 'eliminar_categoria' categoria.id %}" class="btn btn-sm btn-danger">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info text-center">
+            <i class="bi bi-info-circle"></i> No hay categorías registradas
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

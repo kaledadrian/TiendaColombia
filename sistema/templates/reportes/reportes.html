@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h2 class="mb-4"><i class="bi bi-graph-up"></i> Reportes y Estadísticas</h2>
+
+<!-- Filtro de fechas -->
+<div class="card mb-4">
+    <div class="card-header bg-white">
+        <h5 class="mb-0"><i class="bi bi-calendar-range"></i> Filtrar por Fechas</h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" name="fecha_desde" class="form-control" value="{{ fecha_desde }}">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" name="fecha_hasta" class="form-control" value="{{ fecha_hasta }}">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Generar Reporte
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Tarjeta de Total General -->
+    <div class="col-12 mb-4">
+        <div class="card bg-gradient-primary text-white" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-subtitle mb-2">Total General de Gastos</h6>
+                        <h2 class="card-title display-4">$ {{ total_general|floatformat:0 }}</h2>
+                        <p class="card-text">Periodo seleccionado</p>
+                    </div>
+                    <i class="bi bi-calculator display-1 opacity-50"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de categorías -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-pie-chart"></i> Distribución por Categoría</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="reporteCategoriasChart" height="400"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla de categorías -->
+    <div class="col-md-6 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-table"></i> Detalle por Categoría</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Categoría</th>
+                                <th>Cantidad</th>
+                                <th>Total</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cat in reporte_categorias %}
+                            <tr>
+                                <td>
+                                    <span class="badge" style="background-color: {{ cat.categoria__color }}">
+                                        {{ cat.categoria__nombre }}
+                                    </span>
+                                </td>
+                                <td>{{ cat.cantidad }}</td>
+                                <td class="fw-bold">$ {{ cat.total|floatformat:0 }}</td>
+                                <td>
+                                    {% widthratio cat.total total_general 100 %}%
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No hay datos para mostrar</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Gráfico de gastos mensuales -->
+    <div class="col-12 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Gastos Mensuales</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="reporteMensualChart" height="300"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla mensual -->
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0"><i class="bi bi-calendar-month"></i> Resumen Mensual</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Mes</th>
+                                <th>Cantidad de Gastos</th>
+                                <th>Total Gastado</th>
+                                <th>Promedio por Gasto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for mes in reporte_mensual %}
+                            <tr>
+                                <td><strong>{{ mes.nombre_mes }}</strong></td>
+                                <td>{{ mes.cantidad }}</td>
+                                <td class="fw-bold text-primary">$ {{ mes.total|floatformat:0 }}</td>
+                                <td>$ {{ mes.total|divisibleby:mes.cantidad|floatformat:0 }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">No hay datos para mostrar</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Gráfico de categorías
+    const ctxCat = document.getElementById('reporteCategoriasChart').getContext('2d');
+    new Chart(ctxCat, {
+        type: 'doughnut',
+        data: {
+            labels: [{% for cat in reporte_categorias %}'{{ cat.categoria__nombre }}',{% endfor %}],
+            datasets: [{
+                data: [{% for cat in reporte_categorias %}{{ cat.total }},{% endfor %}],
+                backgroundColor: [{% for cat in reporte_categorias %}'{{ cat.categoria__color }}',{% endfor %}],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.label || '';
+                            let value = context.raw || 0;
+                            let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            let percentage = ((value / total) * 100).toFixed(1);
+                            return `${label}: $${value.toLocaleString()} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gráfico mensual
+    const ctxMes = document.getElementById('reporteMensualChart').getContext('2d');
+    new Chart(ctxMes, {
+        type: 'bar',
+        data: {
+            labels: [{% for mes in reporte_mensual %}'{{ mes.nombre_mes }}',{% endfor %}],
+            datasets: [{
+                label: 'Total Gastos (COP)',
+                data: [{% for mes in reporte_mensual %}{{ mes.total }},{% endfor %}],
+                backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '$' + value.toLocaleString();
+                        }
+                    }
+                }
+            },
+            plugins: {
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `Total: $${context.raw.toLocaleString()}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

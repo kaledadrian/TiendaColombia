@@ -1,0 +1,42 @@
+/* Estilos adicionales */
+.card {
+    border-radius: 15px;
+    border: none;
+}
+
+.card-stats {
+    border-radius: 15px;
+    transition: all 0.3s;
+}
+
+.card-stats:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 8px 20px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.sidebar {
+    border-radius: 0;
+}
+
+.sidebar .nav-link {
+    font-weight: 500;
+}
+
+.sidebar .nav-link i {
+    font-size: 1.2rem;
+}
