@@ -27,5 +27,5 @@ Sistema web desarrollado en Django para la gestión de una tienda.
 ##  Autores
 
 Kaled Zambrano-
-braulio kohen-
-danilo miranda
+Braulio Kohen-
+Danilo Miranda
