@@ -1,0 +1,33 @@
+====================================================
+   COMO INICIAR EL PROYECTO TiendaColombia
+====================================================
+
+--- PARA ARRANCAR (cada vez) ---
+
+1) Abrir XAMPP Control Panel
+   - Start en MySQL  (esperar a que quede VERDE)
+
+2) Ir a la carpeta C:\TiendaColombia-main
+   - Doble clic en  correr.bat
+   - Dejar esa ventana abierta (mantiene vivo el servidor)
+
+3) Abrir el navegador en:
+   http://localhost:8000
+
+   Login Admin:    carlos@empresa.com / admin123
+   Login Usuario:  maria@email.com    / usuario123
+
+--- PARA CERRAR ---
+
+1) Cerrar la pestana del navegador
+2) Cerrar la ventana negra de correr.bat (o Ctrl + C)
+3) En XAMPP: Stop a MySQL  ->  Quit
+
+----------------------------------------------------
+NOTA: NO hay que volver a migrar ni importar datos.
+Eso ya quedo guardado en la base de datos.
+
+Solo si quieres EMPEZAR DE CERO (borrar todo y recargar
+los datos de prueba), tendrias que volver a correr el
+proceso de preparacion. Avisa y te paso el script.
+----------------------------------------------------
