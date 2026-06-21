@@ -86,6 +86,9 @@
                     <a class="nav-link {% if 'usuarios' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'lista_usuarios' %}">
                         <i class="bi bi-people me-2"></i> Usuarios
                     </a>
+                    <a class="nav-link {% if 'metodo' in request.resolver_match.url_name %}active{% endif %}" href="{% url 'lista_metodos' %}">
+                        <i class="bi bi-credit-card me-2"></i> Métodos de Pago
+                    </a>
                     {% endif %}
                     <hr class="bg-light">
                     <a class="nav-link" href="{% url 'logout' %}">
